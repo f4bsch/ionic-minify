@@ -59,7 +59,7 @@ export class Minifier {
           this.platformPaths.push(path.join(this.basePath, platform, "assets", "www"));
           break;
         case "ios":
-        case "wp8":
+        case "windows":
         case "browser":
           this.platformPaths.push(path.join(this.basePath, platform, "www"));
           break;
@@ -112,19 +112,24 @@ export class Minifier {
     
     try {
       let ext = extension.split('.')[1].toUpperCase();
-      console.log(`Compressing ${ext} file: ${fileName}`);
+      
       switch (extension){
         case ".js":
+          console.log(`Minifying: ${fileName}`);
           this.compressJS(file, fileName);
           break;
         case ".css":
+          console.log(`Minifying: ${fileName}`);
           this.compressCSS(file, fileName);
           break;
         case ".jpg":
         case ".jpeg":
+          break;
+          console.log(`Compressing: ${fileName}`);
           this.compressJPG(file, fileName);
           break;
         case ".png":
+          break;
           this.compressPNG(file, fileName);
           break;
         default:
@@ -146,6 +151,11 @@ export class Minifier {
    */
   private compressJS(file: string, fileName: string): void {
     let src: string = fs.readFileSync(file, "utf8");
+    var lbPos = src.indexOf('\n');
+    if(lbPos == -1 || lbPos > 400 || lbPos > (src.length-100)) {
+          console.log(`Skipping JS file: Seems ${fileName} is already minified!`);
+          return;
+    }
     let ngSafeFile: any = ngAnnotate(src, {add: true});
     let result: any = UglifyJS.minify(ngSafeFile.src, this.config.jsOptions);
     fs.writeFileSync(file, result.code, "utf8");
